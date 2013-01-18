@@ -1,0 +1,129 @@
+
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.9: http://docutils.sourceforge.net/" />
+<title>CS61C Lab 2</title>
+<link rel="stylesheet" href="http://inst.eecs.berkeley.edu/~cs61c/lab/default.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="cs61c-lab-2">
+<h1 class="title">CS61C Lab 2</h1>
+<h2 class="subtitle" id="strings-and-pointers-the-gdb-debugger">Strings and pointers; the GDB debugger</h2>
+<!-- $Header: /home/ff/cs61c/cvsroot/assignments/lab/02.cptrs/index.rst,v 1.4 2005/11/30 23:42:29 cs61c-tc Exp $ -->
+<div class="section" id="background">
+<h1><a name="background">Background</a></h1>
+<div class="section" id="goals">
+<h2><a name="goals">Goals</a></h2>
+<p>After completing this lab, you should feel comfortable using the gdb 
+debugger to debug strings and pointers in C.</p>
+</div>
+<div class="section" id="reading">
+<h2><a name="reading">Reading</a></h2>
+<ul class="simple">
+<li>K&amp;R: 5.1-5.5</li>
+<li>P&amp;H: 3.1-3.2</li>
+<li><a class="reference" href="http://inst.eecs.berkeley.edu/~cs61c/resources/gdb5-refcard.pdf">GDB Reference Card</a></li>
+<li>Optional: <a class="reference" href="http://www.gnu.org/software/gdb/documentation/">Complete GDB Documentation</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="exercises">
+<h1><a name="exercises">Exercises</a></h1>
+<div class="section" id="setup">
+<h2><a name="setup">Setup</a></h2>
+<p>Copy the contents of ~cs61c/labs/02 to a suitable location in
+your home directory.</p>
+<pre class="literal-block">
+$ mkdir ~/lab
+$ cp -R ~cs61c/labs/02/ ~/lab
+</pre>
+</div>
+<div class="section" id="info">
+<h2><a name="info">Info</a></h2>
+<p>There are two ways to start the debugger:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>In EMACS, type M-x gdb, then type gdb &lt;filename&gt;</li>
+<li>Run gdb &lt;filename&gt; from the command line</li>
+</ol>
+</blockquote>
+</div>
+<div class="section" id="exercise-1-fundamentals">
+<h2><a name="exercise-1-fundamentals">Exercise 1: Fundamentals</a></h2>
+<p>Create a text file containing the answers to the following questions.  
+You will need to have these answers to get checked off for completing 
+this lab.</p>
+<ol class="arabic simple">
+<li>How do you run a program in gdb?</li>
+<li>How do you pass command line arguments to a program when using gdb?</li>
+<li>How do you set a breakpoint in a program?</li>
+<li>How do you set a breakpoint which only occurs when a set of conditions is true (eg when certain variables are a certain value)?</li>
+<li>How do you execute the next line of C code in the program after a break?</li>
+<li>If the next line is a function call, you'll execute the call in one step. How do you execute the C code, line by line, inside the function call?</li>
+<li>How do you continue running the program after breaking?</li>
+<li>How can you see the value of a variable (or even an expression) in gdb?</li>
+<li>How do you configure gdb so it prints the value of a variable after every step?</li>
+<li>How do you print a list of all variables and their values in the current function?</li>
+<li>How do you exit out of gdb?</li>
+</ol>
+</div>
+<div class="section" id="exercise-2-debugging-a-short-c-program">
+<h2><a name="exercise-2-debugging-a-short-c-program">Exercise 2: Debugging a short C program</a></h2>
+<p>Consider the C program <a href="./appendTest.c">appendTest.c</a>. Compile and run the program, and 
+experiment with it. Try appending a few strings, and notice that it does 
+not always produce the correct result. (Press Ctrl-C to exit). You will 
+now use gdb to debug this program.</p>
+<p>First, the program must be compiled with debugging information. To do 
+this, use the -g flag:</p>
+<pre class="literal-block">
+$ gcc -g -o appendTest appendTest.c
+</pre>
+<p>Now start gdb on the resulting program, either in emacs or on the
+command line. Set a breakpoint in the append function, and run the
+program. When the debugger returns at the breakpoint, step through the
+instructions in the append function line by line, and examine the
+values of the variables. Pay attention to the value of s1 and s2
+passed to the append function.  Are they correct?  Why is this a bug?
+Hint: How does C represent strings?  Fix this bug.</p>
+</div>
+<div class="section" id="exercise-3-segmentation-faults">
+<h2><a name="exercise-3-segmentation-faults">Exercise 3: Segmentation Faults</a></h2>
+<p>A segmentation fault or bus error is a common pointer error in C 
+programs. In general, it is caused by an invalid pointer dereference, or 
+by using an invalid address. In this part you will debug a program with 
+such an error.</p>
+<p>Compile and run the program <a href="average.c">average.c</a>.  As its name suggests, the 
+program is supposed to compute the average of a set of numbers. Notice 
+that currently, the program has a bus error after accepting more than one 
+input.</p>
+<p>Make sure the program has been compiled with debug information, and load 
+and run the program in gdb. Notice that gdb traps the segmentation 
+fault, and brings you back to the debugger.</p>
+<p>First, verify the current location in the program. The command to do 
+this is backtrace (bt for short), which will print a stack trace similar 
+to the trace printed in Java programs when an exception is not caught. 
+Notice that the program is currently deep in several system function 
+calls. Since the system code is correct (at least we hope!), use the 
+frame command to move to the last function called in our code. Note that 
+gdb can print the exact line of the segmentation fault. Examine this 
+line carefully, and fix the error.</p>
+<p>Try recompiling and rerunning. The program now reads values correctly, 
+but returns an incorrect average. Use gdb to debug and fix the program 
+by examining the output values of read_values. To do this, either set a 
+breakpoint using the line number, or set a breakpoint in the read_values 
+function, and then continue execution to the end of the function and 
+view the return values. (To run until the end of the current function, 
+use the finish command).</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr class="footer" />
+Generated by <a class="reference" href="http://docutils.sourceforge.net/">Docutils</a> from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
+
+</div>
+</body>
+</html>
