@@ -26,7 +26,7 @@ a:link  { color: #006; text-decoration: underline }
 /* a:visited  { color: #666; text-decoration: underline } */
 a.whitelink  { color: #fff; text-decoration: none }
 a.whitelink:link  { color: #fff; text-decoration: none }
-a.whitelink:visited  { color: #fff; text-decoration: none }
+/*a.whitelink:visited  { color: #fff; text-decoration: none }*/
 .padded      { padding: 9px }
 .boldcenter { font-weight: bold; text-align: center }
 .graybackground   { background-color: #c3c3c3 }
