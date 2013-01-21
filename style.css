@@ -46,7 +46,7 @@ ul ul {
 }
 .lightgraybackground  { background-color: #dfdfdf }
 .even  { background-color: #dfdfdf }
-.listelement { margin-bottom: 12px }
+.listelement { margin-bottom: 12px } 
 ol   {
 	list-style-type: decimal;
 	margin-right: 0;
