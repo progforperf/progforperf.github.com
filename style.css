@@ -23,7 +23,7 @@ p  {
 table  { font-family: Verdana, Arial, Helvetica, sans-serif; }
 td { vertical-align: top }
 a:link  { color: #006; text-decoration: underline }
-a:visited  { color: #666; text-decoration: underline }
+/* a:visited  { color: #666; text-decoration: underline } */
 a.whitelink  { color: #fff; text-decoration: none }
 a.whitelink:link  { color: #fff; text-decoration: none }
 a.whitelink:visited  { color: #fff; text-decoration: none }
