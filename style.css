@@ -23,10 +23,10 @@ p  {
 table  { font-family: Verdana, Arial, Helvetica, sans-serif; }
 td { vertical-align: top }
 a:link  { color: #006; text-decoration: underline }
-a:visited  { color: #666; text-decoration: underline }
+/* a:visited  { color: #666; text-decoration: underline } */
 a.whitelink  { color: #fff; text-decoration: none }
 a.whitelink:link  { color: #fff; text-decoration: none }
-a.whitelink:visited  { color: #fff; text-decoration: none }
+/*a.whitelink:visited  { color: #fff; text-decoration: none }*/
 .padded      { padding: 9px }
 .boldcenter { font-weight: bold; text-align: center }
 .graybackground   { background-color: #c3c3c3 }
@@ -46,7 +46,7 @@ ul ul {
 }
 .lightgraybackground  { background-color: #dfdfdf }
 .even  { background-color: #dfdfdf }
-.listelement { margin-bottom: 12px }
+.listelement { margin-bottom: 12px } 
 ol   {
 	list-style-type: decimal;
 	margin-right: 0;
