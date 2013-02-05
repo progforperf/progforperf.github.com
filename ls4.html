@@ -1,0 +1,105 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="generator" content="pandoc" />
+  <title>LS 4, Feb: Extracting ILP </title>
+  <style type="text/css">
+/*<![CDATA[*/
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode, table.sourceCode pre 
+   { margin: 0; padding: 0; border: 0; vertical-align: baseline; border: none; }
+td.lineNumbers { border-right: 1px solid #AAAAAA; text-align: right; color: #AAAAAA; padding-right: 5px; padding-left: 5px; }
+td.sourceCode { padding-left: 5px; }
+code.sourceCode span.kw { color: #007020; font-weight: bold; } 
+code.sourceCode span.dt { color: #902000; }
+code.sourceCode span.dv { color: #40a070; }
+code.sourceCode span.bn { color: #40a070; }
+code.sourceCode span.fl { color: #40a070; }
+code.sourceCode span.ch { color: #4070a0; }
+code.sourceCode span.st { color: #4070a0; }
+code.sourceCode span.co { color: #60a0b0; font-style: italic; }
+code.sourceCode span.ot { color: #007020; }
+code.sourceCode span.al { color: red; font-weight: bold; }
+code.sourceCode span.fu { color: #06287e; }
+code.sourceCode span.re { }
+code.sourceCode span.er { color: red; font-weight: bold; }
+/*]]>*/
+  </style>
+  <link rel="stylesheet" href="../lab1/css/screen.css" type="text/css" />
+</head>
+<body>
+<div id="header">
+<h1 class="title" LS 4, Extracting ILP </h1>
+</div>
+<div style="width: 600px; margin: 2em;">
+<ul>
+
+<li>Code tarball: <a href="lab6.tgz">LS4.tar</a></li>
+</ul>
+<p>In this hands-on lab, you will learn the black magic of optimization for instruction-level parallelism using Intel Architecture Code Analyser.</p>
+<p>You may work in teams of two <em>or three</em>.</p>
+
+<p>For this assignment you will need a compiler which supports Nehalem SIMD extensions and optimization options. 
+<p>Next, you will learn how to build C++ programs which use intrinsic functions. Download the tarball for this lab:</p>
+<pre class="sourceCode"><code class="sourceCode bash">  <span class="kw">wget</span> http://http://progforperf.github.com/LS4.tar<br />  <span class="kw">tar</span> xvf LS4.tar</code></pre>
+<p>To simplify the build process for this assignment we have provided a Makefile. The Makefile depends on the environment variables <code class="sourceCode"><span class="dt">CXX</span></code> and <code class="sourceCode"><span class="dt">CXXFLAGS</span></code> which specify the C++ compiler and compilation flags. On Linux, you use special compiler options to tell the compiler that your program uses SSE intrinsic functions; otherwise the compiler will not recognize them. In gcc the compiler option to allow SSE4.1 intrinsics, which are required for this lab, is <code class="sourceCode"><span class="dt">-msse4.1</span></code> (this option also implies <code class="sourceCode"><span class="dt">-msse</span></code>, <code class="sourceCode"><span class="dt">-msse2</span></code>, <code class="sourceCode"><span class="dt">-msse3</span></code>, and <code class="sourceCode"><span class="dt">-mmmx</span></code>, and thus enables MMX and SSE1-SSE4.1 intrinsics). However, we recommend to instead use the <code class="sourceCode">-march=corei7</code> option which tells the compiler to enable all intrinsics supported on Nehalem CPUs, which are commonly known as Core-i7. The recommended shell command to set <code class="sourceCode"><span class="dt">CXXFLAGS</span></code> for gcc and clang is</p>
+<pre class="sourceCode"><code class="sourceCode bash">  <span class="kw">export</span> <span class="ot">CXXFLAGS=</span><span class="st">&quot;-O2 -g -march=corei7 -mtune=corei7&quot;</span></code></pre>
+<p>The <code class="sourceCode"><span class="dt">-O2</span></code> option tells the compiler to optimize the code for speed, but not to use speculative optimization techniques. Such techniques, enabled by the <code class="sourceCode"><span class="dt">-O3</span></code> option, are more “aggressive”—though designed to increase performance, they can actually decrease it as well. The <code class="sourceCode"><span class="dt">-g</span></code> option tells the compiler to include debug information in the compiled program. The <code class="sourceCode">-march=corei7</code> option enables all intrinsics supported on Nehalem, and <code class="sourceCode">-mtune=corei7</code> asks the compiler to optimize the program specifically for Nehalem (e.g. by rescheduling instructions so that they run faster on Nehalem). Some other meaningful options for <code class="sourceCode"><span class="dt">-march</span></code> and <code class="sourceCode"><span class="dt">-mtune</span></code> options appear below. (But note these are not suitable for use on Jinx.)</p>
+<ul>
+<li><code class="sourceCode"><span class="dt">core2</span></code> for Intel Core 2 and Xeon processors of the same generation (Harpertown, Clovertown). For 45nm Core 2. processors (and Harpertown Xeons) you should also specify <code class="sourceCode"><span class="dt">-msse4.1</span></code> because they additionally support SSE4.1 instruction set.</li>
+<li><code class="sourceCode"><span class="dt">corei7-avx</span></code> for Intel Sandy Bridge processors (aka second-generation Core-i7).</li>
+<li><code class="sourceCode"><span class="dt">core-avx-i</span></code> for Intel Ivy Bridge processors (aka third-generation Core-i7).</li>
+<li><code class="sourceCode"><span class="dt">bdver2</span></code> for AMD Trinity APUs (Piledriver core).</li>
+<li><code class="sourceCode"><span class="dt">bdver1</span></code> for AMD Bulldozer processors (AMD-FX processors, Opteron 3200, 4200, 6200 series).</li>
+<li><code class="sourceCode"><span class="dt">amdfam10</span></code> for AMD K10 (most pre-buildozer CPUs from AMD, including Opteron 4100 and 6100 series and Phenom processors).</li>
+<li><code class="sourceCode"><span class="dt">atom</span></code> for Intel Atom processors.</li>
+<li><code class="sourceCode"><span class="dt">btver1</span></code> for AMD Bobcat processors (E–350 and alike).</li>
+<li><code class="sourceCode"><span class="dt">native</span></code> for the CPU you compile on.</li>
+</ul>
+<p>When debugging your program you might also want to add <code class="sourceCode"><span class="dt">-DDEBUG</span></code> flag. With <code class="sourceCode"><span class="dt">-DDEBUG</span></code> the program will run fewer iterations, and will report the results sooner. <em>Do not</em> use it for your final timing runs.</p>
+<pre class="sourceCode"><code class="sourceCode bash">  <span class="kw">export</span> <span class="ot">CXXFLAGS=</span><span class="st">&quot;-O2 -g -march=corei7 -mtune=corei7 -DDEBUG&quot;</span></code></pre>
+<p>For this assignment you must use gcc. To compile with gcc, set CXX as</p>
+<pre class="sourceCode"><code class="sourceCode bash">  <span class="kw">export</span> <span class="ot">CXX=</span>g++</code></pre>
+<p>After you set the <code class="sourceCode"><span class="dt">CXX</span></code> and <code class="sourceCode"><span class="dt">CXXFLAGS</span></code> options as described above, you may build the program by typing</p>
+<pre class="sourceCode"><code class="sourceCode bash">  <span class="kw">make</span></code></pre>
+<h1 id="part-1-timing-the-matrix-multiplication">Part 1: Timing the matrix multiplication</h1>
+<p>In the tarball we provided a program which computes pairwise products of 4x4 single-precision floating point matrices in arrays, producing an array of product matrices.</p>
+<p>The compiled program will be named <code class="sourceCode"><span class="dt">matmult</span></code>. The program does the following.</p>
+<ul>
+<li>It creates two random arrays of 4x4 single-precision floating-point matrices.</li>
+<li>It computes a reference array of pairwise matrix products with a simple algorithm.</li>
+<li>It measures time of the a number of two simple implementations, two SSE1 implementations, SSE3 implementation, and SSE4.1 implementation, and reports the number of cycles per matrix (CPE) for each version.</li>
+<li>It checks the correstness of each version by computing the so-called “L1-error” between two arrays of matrix products.</li>
+</ul>
+<p>For this part you have to:</p>
+<ul>
+<li>Run the <code class="sourceCode"><span class="dt">matmult</span></code> program.</li>
+<li>Record the number of cycles per matrix multiplication.</li>
+<li><p>Answer the following questions:</p>
+<ol style="list-style-type: decimal">
+<li><p>Which compiler and which compilation flags you used?</p></li>
+<li><p>Does the program run faster if we use higher versions of SSE instructions?</p></li>
+<li><p>What fraction of peak single-core FLOPS the best version achieves? Remember that the processor is able to run both SSE FP multiplication and SSE FP addition instructions every cycle.</p></li>
+</ol></li>
+</ul>
+<h1 id="part-2-using-intel-architecture-code-analyser">Part 2: Using Intel Architecture Code Analyser</h1>
+<p>In this part you will learn how to use Intel Architecture Code Analyzer (IACA) to improve the performance of your program.</p>
+<p>IACA reports how the instructions in your program map to execution ports inside the CPU, and gives you some implicit tips about optimization. To analyze your code with IACA you have to insert special markers in it. The markers are defined in the header file <code class="sourceCode"><span class="dt">iacaMarks.h</span></code>, which is already included in <code class="sourceCode"><span class="dt">matmult.cpp</span></code>. Insert the <code class="sourceCode"><span class="dt">IACA_START</span></code> marker before the <span class="fu">main</span> loop in the function <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_scalar_load</span></code>, and <code class="sourceCode"><span class="dt">IACA_END</span></code> marker immediately after the loop. Compile the program. <strong>IACA markers are not valid x86 instructions. If you compile and run a program with such markers, the program may crash.</strong> Run IACA with</p>
+<pre class="sourceCode"><code class="sourceCode bash">  iaca -64 -arch NHM -o matmul-sse-scalar-load.txt matmult.o</code></pre>
+<p>The <code class="sourceCode"><span class="dt">-64</span></code> parameter tells the IACA to analyse the 64-bit program, <code class="sourceCode">-arch NHM</code> means that IACA should produce analysis for Nehalem architecture, <code class="sourceCode">-o matmul-sse-scalar-load.txt</code> is to write the output into the <code class="sourceCode"><span class="dt">matmul-sse-scalar-load.txt</span></code> file.</p>
+<p>Now remove the IACA markers in the <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_scalar_load</span></code> function, and add them before and after the <span class="fu">main</span> loop in the <code class="sourceCode"><span class="dt">matrix4x4_mul_sse</span></code> function. Run IACA with parameters</p>
+<pre class="sourceCode"><code class="sourceCode bash">  iaca -64 -arch NHM -o matmul-sse.txt matmult.o</code></pre>
+<p>Inspect the <code class="sourceCode"><span class="dt">matmul-sse-scalar-load.txt</span></code> and <code class="sourceCode"><span class="dt">matmul-sse.txt</span></code> files. They list the disassembly of the code between IACA_START and IACA_END, the number of macrooperations (fused microoperations) for each instruction, and the exection ports they bind to. Notice which CPU resource is the bottleneck.</p>
+<p>Now remove all IACA marks in <code class="sourceCode"><span class="dt">matmult.cpp</span></code>, and consider the function <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_optimized</span></code>. Initially it is the same as <code class="sourceCode"><span class="dt">matrix4x4_mul_sse</span></code> function. Now replace the computation of <code class="sourceCode"><span class="dt">c2</span></code> in <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_optimized</span></code> with the code from <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_scalar_load</span></code>. Compile, and run.</p>
+<p>Answer the following questions:</p>
+<ol style="list-style-type: decimal">
+<li><p>Which CPU resource is the bottleneck in <code class="sourceCode"><span class="dt">matrix4x4_mul_sse</span></code> function?</p></li>
+<li><p>Which CPU resource is the bottleneck in <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_scalar_load</span></code> function?</p></li>
+<li><p>Which function achieves higher performance, <code class="sourceCode"><span class="dt">matrix4x4_mul_sse</span></code> or <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_scalar_load</span></code>?</p></li>
+<li><p>Which function achieves higher performance, <code class="sourceCode"><span class="dt">matrix4x4_mul_sse</span></code> or <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_optimized</span></code>?</p></li>
+<li><p>Explain why the changes you made to <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_optimized</span></code> are good for performance.</p></li>
+</ol>
+</div>
+</body>
+</html>
