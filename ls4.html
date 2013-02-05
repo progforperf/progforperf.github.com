@@ -82,7 +82,7 @@ Code tarball: <a href="LS4.tar">LS4.tar</a>
 </ol></li>
 </ul>
 <h1 id="part-2-using-intel-architecture-code-analyser">Part 2: Using Intel Architecture Code Analyser</h1>
-<pre class="sourceCode"><code class="sourceCode bash">  <span class="kw">wget</span> http://http://progforperf.github.com/iaca-lin32.zip<br />  <span class="kw">gunzip</span>iaca-lin32.zip</code></pre>
+<pre class="sourceCode"><code class="sourceCode bash">  <span class="kw">wget</span> http://http://progforperf.github.com/iaca-lin32.zip<br />  <span class="kw">gunzip</span> iaca-lin32.zip</code></pre>
 <p>In this part you will learn how to use Intel Architecture Code Analyzer (IACA) to improve the performance of your program.</p>
 <p>IACA reports how the instructions in your program map to execution ports inside the CPU, and gives you some implicit tips about optimization. To analyze your code with IACA you have to insert special markers in it. The markers are defined in the header file <code class="sourceCode"><span class="dt">iacaMarks.h</span></code>, which is already included in <code class="sourceCode"><span class="dt">matmult.cpp</span></code>. Insert the <code class="sourceCode"><span class="dt">IACA_START</span></code> marker before the <span class="fu">main</span> loop in the function <code class="sourceCode"><span class="dt">matrix4x4_mul_sse_scalar_load</span></code>, and <code class="sourceCode"><span class="dt">IACA_END</span></code> marker immediately after the loop. Compile the program. <strong>IACA markers are not valid x86 instructions. If you compile and run a program with such markers, the program may crash.</strong> Run IACA with</p>
 <pre class="sourceCode"><code class="sourceCode bash">  iaca -64 -arch NHM -o matmul-sse-scalar-load.txt matmult.o</code></pre>
