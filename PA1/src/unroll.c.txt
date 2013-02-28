@@ -1,0 +1,105 @@
+
+
+#include <stdio.h>
+#include <math.h>
+#include "rdtsc.h"
+
+
+
+
+
+
+inline void Unroll2(data_t *y)
+{
+	float t1;
+	for (int i = 0; i < N; i=i+4)
+	{
+		y[i] = 0;
+		y[i+1] = 0;
+		y[i+2] = 0;
+		y[i+3] = 0;
+	}
+}
+
+
+
+
+ typedef data_t int;
+
+int main()
+{	
+	 data_t * buffer;
+	tsc_counter a, b;
+	double cycles, baseline;
+
+	//N is a define
+	buffer = (float*)_mm_malloc(sizeof(float)*N*N,16);
+	//x = (float*)_mm_malloc(sizeof(float)*N,16);
+	//y = (float*)_mm_malloc(sizeof(float)*N,16);
+	//y_vec = (float*)_mm_malloc(sizeof(float)*N,16);
+
+	if (M == NULL || x == NULL || y == NULL || y_vec == NULL)
+		return 1;
+
+	//init vars
+	for (int i = 0; i<N; i++){
+			buffer[i] = rand();	
+	}
+			
+
+	
+
+	
+	//-----------------------------------------Timing 1
+	//warm up	
+
+	//-----------------No Vec Warmup-------------------
+	//lookup task b from the HW here
+	//
+	//State the Asm. Instructions used by the compiler as a comment here:
+	//
+	// <--- List of Instructions --->
+	//-----------------------------------------Timing 1
+	//warm up
+		Unroll3(M,x,y);
+
+
+	CPUID(); RDTSC(a); CPUID(); RDTSC(b);
+	CPUID(); RDTSC(a); CPUID(); RDTSC(b);
+
+	RDTSC(a);
+	for(int i=0; i<NUM_RUNS; ++i)
+	{ 
+		Unroll3(M,x,y);
+	}
+	RDTSC(b);
+	cycles = ((double)COUNTER_DIFF(b, a)) / ((double) NUM_RUNS);
+	printf("%lf cycles -> Speedup: %2.2f x through partially unrolled code - %1.0f\n",cycles,baseline/cycles,y[0]);
+
+
+	//-----------------------------------------Timing 2
+	//warm up
+		Unroll4(buffer,a);
+
+	CPUID(); RDTSC(a); CPUID(); RDTSC(b);
+	CPUID(); RDTSC(a); CPUID(); RDTSC(b);
+
+	RDTSC(a);
+	for(int i=0; i<NUM_RUNS; ++i)
+	{ 
+		Unroll4(buffer,a);
+	}
+	RDTSC(b);
+	cycles = ((double)COUNTER_DIFF(b, a)) / ((double) NUM_RUNS);
+	printf("%lf cycles -> Speedup: %2.2f x through vectorized code - %1.0f\n",cycles,baseline/cycles,y_vec[0]);
+	
+	
+
+	_mm_free(M);
+	_mm_free(y);
+	_mm_free(x);
+
+
+	return 0;
+}
+

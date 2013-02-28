@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/pueschel/svn/!svn/ver/782/trunk/teaching/S12-fastcode/homeworks/hw02/scalaradd
+END
+scalaradd.c
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/pueschel/svn/!svn/ver/782/trunk/teaching/S12-fastcode/homeworks/hw02/scalaradd/scalaradd.c
+END
+funcs.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/pueschel/svn/!svn/ver/776/trunk/teaching/S12-fastcode/homeworks/hw02/scalaradd/funcs.h
+END
+rdtsc.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/pueschel/svn/!svn/ver/776/trunk/teaching/S12-fastcode/homeworks/hw02/scalaradd/rdtsc.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/pueschel/svn/!svn/ver/777/trunk/teaching/S12-fastcode/homeworks/hw02/scalaradd/Makefile
+END
