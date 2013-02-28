@@ -1,0 +1,112 @@
+Programming for performance       
+
+Programming Assignment 5    			
+
+
+Your task is to optimize  double-precision square matrix multiplication code to run fast on a single processor core of TACC Lonestar.
+
+Codes provided:
+•	A trivial unoptimized implementation and simple blocked implementation
+•	A timing harness and tester
+•	A version of the interface that calls the ATLAS BLAS
+
+Implementation
+Your function must have the following signature:
+void square_dgemm(unsigned M, const double* A, const double* B,
+                  double* C);
+
+The three arrays should be interpreted as matrices in column-major order with leading dimension M. The operation implemented will actually be a multiply-add:
+C := C + A*B
+ 
+
+The necessary files are in "PA3.tar". To successfully run these codes, you need to change the Makefile.in. (Makefile.in for the Lonestar is provided.)
+Included are:
+•	Makefile: a sample Makefile with some basic rules
+•	Makefile.in: default settings for optimization flags.
+•	benchmark.c: the driver program
+•	dgemm-naive.c: a very simple square_dgemm implementation
+•	dgemm-blocked.c: a slightly more complex square_dgemm implementation
+•	dgemm-blas.c: a wrapper that lets the C driver program call the dgemm routine in a tuned BLAS implementation
+•	dgemm.c: Your optimized dgemm routine.
+•	tplot.sh: a sample script that uses gnuplot to plot timing results. If the raw output is in (for example) timing-basic.out, run ./tplot.sh basic to generate timing-basic.pdf.
+•	make_sge.sh: a helper shell script that generates SGE batch system submission scripts for matmul timing runs.
+
+Submission
+Your group should submit your dgemm.c, your Makefile (which should include any overrides to the default Makefile.in so that we can see compiler optimizations) and a write-up. Your write-up should contain:
+•	a description of optimizations used or attempted
+•	the results of those optimizations
+•	your explanations for any odd behavior (e.g. performance dips)
+•	how the performance changed when running your optimized code on a the other machines.
+•	All the relevant plots.
+Your submission should be a tar archive, named like: name1_name2_pa3.tar
+
+Competition notes:
+
+We will care about matrix multiply in the range of problems starting with those that do not fit in L2 to those which do not fit in L3. The exact sizes will not be given, but do expect that some tests will be on odd sized matrixes.
+We will also check very small matrix sizes as well. You may need two versions of the code one for smaller matrix sizes and one of bigger matrix sizes.
+All matrices will be square.
+We will test on lonestar.
+You are free to use any vector intrinsics available. You are free to prefetch.
+We will compile the code with gcc -O3. 
+
+Notes:
+•	You may assume that A and B do not alias C; however, A and B may alias each other. It is semantically correct to qualify C (the last argument to square_dgemm) with the C99 restrict keyword. There is a lot online about restrict and pointer-aliasing - this is a good article to start with.
+•	The matrices are all stored in column-major order, i.e. Ci,j == C(i,j) == C[(i-1)+(j-1)*n], for i=1:n, where n is the number of rows in C. Note that we use 1-based indexing when using mathematical symbols and MATLAB index notation (parentheses), and 0-based indexing when using C index notation (square brackets).
+•	We will check correctness by the following componentwise error bound: |square_dgemm(n,A,B,0) - A*B| < eps*n*|A|*|B|. where eps := 2–52 = 2.2 * 10–16 is the machine epsilon.
+•	Choose the best suitable compiler flags for the codes, for example, you can use the following optimization flags: -O3 -ffast-math -funroll-loops -march=corei7-avx) 
+•	Example plot:
+ 
+[ You are also expected to generate a plot similar to the one given above. ]
+
+Optimizations that you can try out: 
+
+(CPU core specific optimizations [for efficient pipelining]): Loop unrolling and scheduling, Scalar replacement, SIMD, Register tiling (or register blocking), Instruction Pairing (for FMA instruction).
+
+Address Alignment.
+
+(Optimizations for cache): Loop Permutation (or Loop interchange), , Copy Optimization (or buffering), Loop tiling, Software Prefetching etc.
+
+You have to explain the optimizations you have tried and also impact of each optimization on the performance.
+
+
+Where arrays live in C
+There are different types of places where variables can live in memory:
+•	Automatic variables (the type you declare at the start of a function) live on the stack.
+•	Global variables and static variables (defined with the static keyword in a function) live in the global space.
+•	Constants often live in their own constant space.
+•	Dynamically allocated data lives on the heap.
+In a lot of day-to-day stuff, we use the stack for almost everything. But the stack is a finite resource! If you start allocating large arrays on the stack, you will very quickly have a stack overflow (and a program crash). This is probably not what you want, so I suggest using the following strategy if you want a little side buffer for copy optimization:
+void my_function(...) 
+{ 
+    /* static means that this goes in the global segment 
+     * (only one copy -- not thread safe!), and the alignment 
+     * attribute is helpful if you're going to use my_space 
+     * with SSE stuff.
+     */ 
+    static double my_space[BLOCK_SIZE*BLOCK_SIZE] 
+        __attribute__((aligned(16))); 
+    ... 
+} 
+
+You can also dynamically allocate space on the heap -- but you won't want to do that anywhere near an inner loop!
+Timing woes
+Timing on SMP Linux systems is a pain for two reasons:
+1.	The real time clock measures total time for a run, including time given to other processes.
+2.	The per-CPU clocks may differ, so that if your process gets scheduled on multiple processors, your timing gets goofy.
+The code I have given you should usually work, but a more reliable way may be to define CLOCK as CLOCK_PROCESS_CPUTIME_ID in timing.c and to use taskset to ensure that your process is pinned to a single physical processor: i.e. use taskset -c 0 ./matmul (or change $1 >> timing.raw to taskset -c 0 $1 >> timing.raw in make_sge.sh.
+
+References:
+
+•	How To Write Fast Numerical Code: A Small Introduction (Note: how to write C code for modern compilers and memory hierarchies, so that it runs fast.) {Must read pages: 38-45}
+•	Goto, K., and van de Geijn, Anatomy of High-Performance Matrix Multiplication, ACM Transactions on Mathematical Software 34, 3, Article 12. (Note: explains the design decisions for the GotoBLAS dgemm implementation, which also apply to your code.)
+•	some notes on serial tuning that may be helpful.
+•	What Every Programmer Should Know About Memory by Ulrich Drepper is a 114 page description of what Drepper considers to be memory basics. Good information on everything from the physics of memory hardware up through the logical organization
+•	The Intel 64 & IA-32 Architectures Optimization Reference Manual is just what it says. You probably won't go through all 700-odd pages of this, but there are some chapters that you might find useful.
+•	The optimizations used in PhiPAC and ATLAS may be interesting. Note: You cannot use PHiPAC or ATLAS to generate your matrix multiplication kernels. You can write your own code generator, however. You might want to skim the tech report on PhiPAC. The section on C coding guidelines will be particularly relevant.
+
+
+CONTEST: The Group with the best performing code will be awarded a Grand Prize !!!
+
+Note: Please do not even show your code other groups' members. You are only allowed to discuss orally about the optimization techniques you are trying out. Always aim for achieving the performance that is close to the theoretical peak or BLAS code performance.
+
+
