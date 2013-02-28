@@ -221,6 +221,19 @@
       change <code>$1 &gt;&gt; timing.raw</code> to <code>taskset -c 0 $1
       &gt;&gt; timing.raw</code> in <code>make_sge.sh</code>.</p>
 
+
+<h2>Competition notes:</h2>
+<p>
+We will care about matrix multiply in the range of problems starting with those that do not fit in L2 to those which do not fit in L3. The exact sizes will not be given, but do expect that some tests will be on odd sized matrixes.
+We will also check very small matrix sizes as well. You may need two versions of the code one for smaller matrix sizes and one of bigger matrix sizes.
+All matrices will be square.
+We will test on lonestar.
+You are free to use any vector intrinsics available. You are free to prefetch.
+We will compile the code with gcc -O3. 
+</p>
+
+
+
       <h2>Further Resources</h2>
 
       <ul>
