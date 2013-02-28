@@ -1,82 +1,194 @@
-Programming for performance       
 
-Programming Assignment 5    			
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Mac OS X (vers 31 October 2006 - Apple Inc. build 15.3.6), see www.w3.org" />
+  <meta content="text/html; charset=us-ascii" http-equiv="content-type" />
 
-Your task is to optimize  double-precision square matrix multiplication code to run fast on a single processor core of TACC Lonestar.
+  <title>PA 3</title>
+  <meta name="author" content="" /><!--- Blueprint CSS Framework -->
+  <link href="http://www.cs.cornell.edu/~bindel/css/blueprint/screen.css" rel=
+  "stylesheet" media="screen, projection" type="text/css" />
+  <link href="http://www.cs.cornell.edu/~bindel/css/blueprint/print.css" rel=
+  "stylesheet" media="print" type="text/css" /><!--[if IE]>
+      <link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" />
+   <![endif]-->
+  <!-- CodeRay syntax highlighting CSS -->
+  <link href="http://www.cs.cornell.edu/~bindel/css/coderay.css" rel=
+  "stylesheet" type="text/css" /><!-- Homepage CSS -->
+  <link href="http://www.cs.cornell.edu/~bindel/css/site.css" rel="stylesheet"
+  media="screen, projection" type="text/css" />
+</head>
 
-Codes provided:
-•	A trivial unoptimized implementation and simple blocked implementation
-•	A timing harness and tester
-•	A version of the interface that calls the ATLAS BLAS
+<body>
+  <div class="container">
+    <div class="column span-20 prepend-2 append-2 first last" id="header">
+      <h3>Programming Assignment 3</h3>
+      <hr />
+    </div>
 
-Implementation
-Your function must have the following signature:
-void square_dgemm(unsigned M, const double* A, const double* B,
+    <div class="column span-15 prepend-2 first">
+      <p style="text-align:center"><b>Due: Thursday, March 7th 2013 by 9:59 pm.</b></p>
+
+      <h2>Problem</h2>
+
+      <p>For this assignment, you will optimize a routine to multiply two
+      double-precision square matrices. As discussed in class, the naive
+      implementation is short, sweet, and horrifyingly slow. A naive blocked
+      code is only marginally better. You will need to use what you have
+      learned about tuning to get your code to run as fast as possible on a
+      single core on one node of the Lonestar supercomputer.</p>
+
+      <p>We provide:</p>
+
+      <ul>
+        <li>A trivial unoptimized implementation and simple blocked
+        implementation</li>
+
+        <li>A timing harness and tester</li>
+
+        <li>A version of the interface that calls the ATLAS BLAS</li>
+      </ul>
+
+      <h2>Implementation</h2>
+
+      <p>Your function must have the following signature:</p>
+      <pre>
+<code>void square_dgemm(unsigned M, const double* A, const double* B,
                   double* C);
+</code>
+</pre>
 
-The three arrays should be interpreted as matrices in column-major order with leading dimension M. The operation implemented will actually be a multiply-add:
-C := C + A*B
- 
+      <p>The three arrays should be interpreted as matrices in column-major
+      order with leading dimension M. The operation implemented will actually
+      be a multiply-add:</p>
+      <pre>
+<code>C := C + A*B
+</code>
+</pre>
 
-The necessary files are in "PA3.tar". To successfully run these codes, you need to change the Makefile.in. (Makefile.in for the Lonestar is provided.)
-Included are:
-•	Makefile: a sample Makefile with some basic rules
-•	Makefile.in: default settings for optimization flags.
-•	benchmark.c: the driver program
-•	dgemm-naive.c: a very simple square_dgemm implementation
-•	dgemm-blocked.c: a slightly more complex square_dgemm implementation
-•	dgemm-blas.c: a wrapper that lets the C driver program call the dgemm routine in a tuned BLAS implementation
-•	dgemm.c: Your optimized dgemm routine.
-•	tplot.sh: a sample script that uses gnuplot to plot timing results. If the raw output is in (for example) timing-basic.out, run ./tplot.sh basic to generate timing-basic.pdf.
-•	make_sge.sh: a helper shell script that generates SGE batch system submission scripts for matmul timing runs.
+      <p>Look at the code in <a href=
+      "matmul/basic_dgemm.c"><code>basic_dgemm.c</code></a> if you find this
+      confusing.</p>
 
-Submission
-Your group should submit your dgemm.c, your Makefile (which should include any overrides to the default Makefile.in so that we can see compiler optimizations) and a write-up. Your write-up should contain:
-•	a description of optimizations used or attempted
-•	the results of those optimizations
-•	your explanations for any odd behavior (e.g. performance dips)
-•	how the performance changed when running your optimized code on a the other machines.
-•	All the relevant plots.
-Your submission should be a tar archive, named like: name1_name2_pa3.tar
+      <p>The necessary files are in <a href="PA3.tar">PA3.tar</a></p>
+     
 
-Competition notes:
+      <p>Included are:</p>
 
-We will care about matrix multiply in the range of problems starting with those that do not fit in L2 to those which do not fit in L3. The exact sizes will not be given, but do expect that some tests will be on odd sized matrixes.
-We will also check very small matrix sizes as well. You may need two versions of the code one for smaller matrix sizes and one of bigger matrix sizes.
-All matrices will be square.
-We will test on lonestar.
-You are free to use any vector intrinsics available. You are free to prefetch.
-We will compile the code with gcc -O3. 
+      <ul>
+        <li><code>Makefile</code>: a sample <code>Makefile</code> with some
+        basic rules</li>
 
-Notes:
-•	You may assume that A and B do not alias C; however, A and B may alias each other. It is semantically correct to qualify C (the last argument to square_dgemm) with the C99 restrict keyword. There is a lot online about restrict and pointer-aliasing - this is a good article to start with.
-•	The matrices are all stored in column-major order, i.e. Ci,j == C(i,j) == C[(i-1)+(j-1)*n], for i=1:n, where n is the number of rows in C. Note that we use 1-based indexing when using mathematical symbols and MATLAB index notation (parentheses), and 0-based indexing when using C index notation (square brackets).
-•	We will check correctness by the following componentwise error bound: |square_dgemm(n,A,B,0) - A*B| < eps*n*|A|*|B|. where eps := 2–52 = 2.2 * 10–16 is the machine epsilon.
-•	Choose the best suitable compiler flags for the codes, for example, you can use the following optimization flags: -O3 -ffast-math -funroll-loops -march=corei7-avx) 
-•	Example plot:
- 
-[ You are also expected to generate a plot similar to the one given above. ]
+        <li><code>Makefile.in</code>: default settings for optimization flags
+        and the like</li>
 
-Optimizations that you can try out: 
+        <li><code>matmul.c</code>: the driver program</li>
 
-(CPU core specific optimizations [for efficient pipelining]): Loop unrolling and scheduling, Scalar replacement, SIMD, Register tiling (or register blocking), Instruction Pairing (for FMA instruction).
+        <li><code>basic_dgemm.c</code>: a very simple <code>square_dgemm</code>
+        implementation</li>
 
-Address Alignment.
+        <li><code>blocked_dgemm.c</code>: a slightly more complex
+        <code>square_dgemm</code> implementation</li>
 
-(Optimizations for cache): Loop Permutation (or Loop interchange), , Copy Optimization (or buffering), Loop tiling, Software Prefetching etc.
+        <li><code>blas_dgemm.c</code>: a wrapper that lets the C driver program
+        call the <code>dgemm</code> routine in a tuned BLAS implementation</li>
 
-You have to explain the optimizations you have tried and also impact of each optimization on the performance.
+        <li><code>f2c_dgemm.c</code>: a wrapper that illustrates how to call
+        the reference FORTRAN <code>dgemm</code> routine from C.</li>
+
+        <li><code>fdgemm.f</code>: the reference FORTRAN <code>dgemm</code>
+        called by <code>f2c_dgemm.c</code></li>
+
+        <li><code>tplot.sh</code>: a sample script that uses
+        <code>gnuplot</code> to plot timing results. If the raw output is in
+        (for example) <code>timing-basic.out</code>, run <code>./tplot.sh
+        basic</code> to generate <code>timing-basic.pdf</code>.</li>
+
+        <li><code>make_sge.sh</code>: a helper shell script that generates SGE
+        batch system submission scripts for <code>matmul</code> timing
+        runs.</li>
+      </ul>
+
+      <p>We will be testing on the compute node on the Lonestar.
+      Each node has 2 six-core chips, but you will only be using a single
+      core for this assignent. </p>
+
+      <h2>Submission</h2>
+
+      <p>Your group should submit your <code>dgemm.c</code>, your
+      <code>Makefile</code> (which should include any overrides to the default
+      <code>Makefile.in</code> so that we can see compiler optimizations) and a
+      write-up. Your write-up should contain:</p>
+
+      <ul>
+       
+        <li>a description of optimizations used or attempted</li>
+
+        <li>the results of those optimizations</li>
+
+        <li>your explanations for any odd behavior (e.g. performance dips)</li>
+        <li>All the relevant plots.</li>
+      </ul>
+
+      <p>To document the effect of your optimizations, include a graph
+      comparing your code with <code>basic_dgemm.c</code>. Your explanations
+      should rely heavily on your knowledge of the memory hierarchy (benchmark
+      graphs help).</p>
+
+      <h2>General strategy</h2>
+
+      <p>Roughly speaking, a fast matrix multiplication routine will likely
+      have two ingredients: a fast "kernel" capable of multiplying small
+      matrices quickly, and then routines that use the kernel in a
+      cache-friendly way to multiply larger matrices. One way to approach the
+      assignment is top-down: sketch out the kernel first, and make sure you
+      understand the global structure of the calls you want to set up, then
+      start tuning parameters. Another way is bottom-up: build a fast kernel,
+      play with parameters until you're happy with it; then build a matrix
+      multiply for small-ish matrices (things that fit in L1 cache) out of the
+      kernel, and play with parameters until happy; and then repeat for the L2
+      (and maybe L3) cache. I strongly recommend the second path, if only for
+      the sake of sanity while debugging! It's easier to focus on getting a
+      small thing right first than to try to get it all right on the first
+      try.</p>
+
+    
+
+     
+
+    
 
 
-Where arrays live in C
-There are different types of places where variables can live in memory:
-•	Automatic variables (the type you declare at the start of a function) live on the stack.
-•	Global variables and static variables (defined with the static keyword in a function) live in the global space.
-•	Constants often live in their own constant space.
-•	Dynamically allocated data lives on the heap.
-In a lot of day-to-day stuff, we use the stack for almost everything. But the stack is a finite resource! If you start allocating large arrays on the stack, you will very quickly have a stack overflow (and a program crash). This is probably not what you want, so I suggest using the following strategy if you want a little side buffer for copy optimization:
-void my_function(...) 
+     
+      <h3>Where arrays live in C</h3>
+
+      <p>There are different types of places where variables can live in
+      memory:</p>
+
+      <ul>
+        <li>Automatic variables (the type you declare at the start of a
+        function) live on the stack.</li>
+
+        <li>Global variables and static variables (defined with the static
+        keyword in a function) live in the global space.</li>
+
+        <li>Constants often live in their own constant space.</li>
+
+        <li>Dynamically allocated data lives on the heap.</li>
+      </ul>
+
+      <p>In a lot of day-to-day stuff, we use the stack for almost everything.
+      But the stack is a finite resource! If you start allocating large arrays
+      on the stack, you will very quickly have a stack overflow (and a program
+      crash). This is probably not what you want, so I suggest using the
+      following strategy if you want a little side buffer for copy
+      optimization:</p>
+      <pre>
+<code>void my_function(...) 
 { 
     /* static means that this goes in the global segment 
      * (only one copy -- not thread safe!), and the alignment 
@@ -87,26 +199,112 @@ void my_function(...)
         __attribute__((aligned(16))); 
     ... 
 } 
+</code>
+</pre>
 
-You can also dynamically allocate space on the heap -- but you won't want to do that anywhere near an inner loop!
-Timing woes
-Timing on SMP Linux systems is a pain for two reasons:
-1.	The real time clock measures total time for a run, including time given to other processes.
-2.	The per-CPU clocks may differ, so that if your process gets scheduled on multiple processors, your timing gets goofy.
-The code I have given you should usually work, but a more reliable way may be to define CLOCK as CLOCK_PROCESS_CPUTIME_ID in timing.c and to use taskset to ensure that your process is pinned to a single physical processor: i.e. use taskset -c 0 ./matmul (or change $1 >> timing.raw to taskset -c 0 $1 >> timing.raw in make_sge.sh.
+      <p>You can also dynamically allocate space on the heap -- but you won't
+      want to do that anywhere near an inner loop!</p>
 
-References:
+      <h3>Timing woes</h3>
 
-•	How To Write Fast Numerical Code: A Small Introduction (Note: how to write C code for modern compilers and memory hierarchies, so that it runs fast.) {Must read pages: 38-45}
-•	Goto, K., and van de Geijn, Anatomy of High-Performance Matrix Multiplication, ACM Transactions on Mathematical Software 34, 3, Article 12. (Note: explains the design decisions for the GotoBLAS dgemm implementation, which also apply to your code.)
-•	some notes on serial tuning that may be helpful.
-•	What Every Programmer Should Know About Memory by Ulrich Drepper is a 114 page description of what Drepper considers to be memory basics. Good information on everything from the physics of memory hardware up through the logical organization
-•	The Intel 64 & IA-32 Architectures Optimization Reference Manual is just what it says. You probably won't go through all 700-odd pages of this, but there are some chapters that you might find useful.
-•	The optimizations used in PhiPAC and ATLAS may be interesting. Note: You cannot use PHiPAC or ATLAS to generate your matrix multiplication kernels. You can write your own code generator, however. You might want to skim the tech report on PhiPAC. The section on C coding guidelines will be particularly relevant.
+      <p>Timing on SMP Linux systems is a pain for two reasons:</p>
 
+      <ol>
+        <li>The real time clock measures total time for a run, including time
+        given to other processes.</li>
 
-CONTEST: The Group with the best performing code will be awarded a Grand Prize !!!
+        <li>The per-CPU clocks may differ, so that if your process gets
+        scheduled on multiple processors, your timing gets goofy.</li>
+      </ol>
 
-Note: Please do not even show your code other groups' members. You are only allowed to discuss orally about the optimization techniques you are trying out. Always aim for achieving the performance that is close to the theoretical peak or BLAS code performance.
+      <p>The code I have given you <em>should</em> usually work, but a more
+      reliable way may be to define <code>CLOCK</code> as
+      <code>CLOCK_PROCESS_CPUTIME_ID</code> in <code>timing.c</code> and to use
+      <code>taskset</code> to ensure that your process is pinned to a single
+      physical processor: i.e. use <code>taskset -c 0 ./matmul</code> (or
+      change <code>$1 &gt;&gt; timing.raw</code> to <code>taskset -c 0 $1
+      &gt;&gt; timing.raw</code> in <code>make_sge.sh</code>.</p>
 
+      <h2>Further Resources</h2>
 
+      <ul>
+        
+        <li>You can find out more about the processor by running <a href=
+        "http://www.etallen.com/cpuid.html">Todd Allen's <code>cpuid</code>
+        utility</a> and by running <code>cat /proc/cpuinfo</code>. Note that
+        you should do this using the batch queueing system, since the front-end
+        node has a different processor than the workers.</li>
+
+        <li><a href="http://people.redhat.com/drepper/cpumemory.pdf">What Every
+        Programmer Should Know About Memory</a> by Ulrich Drepper is a 114 page
+        description of what Drepper considers to be memory basics. Good
+        information on everything from the physics of memory hardware up
+        through the logical organization</li>
+
+        
+        <li>The optimizations used in <a href=
+        "http://www.cs.berkeley.edu/%7Erichie/phipac/paper/paper.html">PhiPAC</a>
+        and <a href="http://math-atlas.sourceforge.net/">ATLAS</a> may be
+        interesting. Note: You cannot use PHiPAC or ATLAS to generate your
+        matrix multiplication kernels. You <em>can</em> write your own code
+        generator, however. You might want to skim the <a href=
+        "http://www.eecs.berkeley.edu/Pubs/TechRpts/1998/5682.html">tech
+        report</a> on PhiPAC. The section on C coding guidelines will be
+        particularly relevant.</li>
+
+        <li>There is a <a href=
+        "http://suif.stanford.edu/papers/lam91.ps">classic paper</a> on the
+        idea of cache blocking in the context of matrix multiply by Monica Lam,
+        et al.</li>
+
+        <li>Several folks have tried to automatically get cache locality by
+        basing their matrix storage organization around space-filling curves.
+        See the <a href="http://www.cs.duke.edu/%7Ealvy/papers/ics99.ps">paper
+        by Chatterjee</a> and the classic paper by Gustavson, <a href=
+        "http://researchweb.watson.ibm.com/journal/rd/416/gustavson.html">"Recursion
+        leads to automatic variable blocking for dense linear algebra"</a>. I
+        don't necessarily recommend these optimizations on a time budget, but
+        they make interesting reading.</li>
+      </ul>
+    </div>
+
+    <div class="column span-5 append-2 last" id="nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+
+        <li><a href="syllabus.html">Syllabus</a></li>
+
+        <li><a href="lectures.html">Lectures</a></li>
+
+        <li><a href="assignments.html">Assignments</a></li>
+
+        <li><a href="cluster.html">Cluster info</a></li>
+
+        <li><a href="references.html">References</a></li>
+      </ul>
+      <hr />
+    </div>
+
+    <div class="column span-20 prepend-2 append-2 first last" id="footer">
+      <hr />
+
+      <div class="quiet">
+        <div class="span-15">
+          David Bindel <script language="javascript" type="text/javascript">
+//<![CDATA[
+          function strrev(str) { return str.split("").reverse().join(""); }
+          var name = 'lednib';
+          var domain = 'cs.cornell.edu';
+          document.write('(' + strrev(name) + '@' + domain + ')');
+          //]]>
+          </script> <noscript>lastname at cs.cornell.edu</noscript>
+        </div>
+
+        <div class="span-5 last">
+          Last modified 2011-09-22
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
