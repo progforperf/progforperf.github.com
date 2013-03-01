@@ -39,7 +39,7 @@
       implementation is short, sweet, and horrifyingly slow. A naive blocked
       code is only marginally better. You will need to use what you have
       learned about tuning to get your code to run as fast as possible on a
-      single core on one node of the Lonestar supercomputer.</p>
+      single core on one node of the TACC Stampede supercomputer.</p>
 
       <p>We provide:</p>
 
@@ -109,15 +109,20 @@
         runs.</li>
       </ul>
 
-      <p>We will be testing on the compute node on the Lonestar.
-      Each node has 2 six-core chips, but you will only be using a single
-      core for this assignent. </p>
+      <p>We will be testing on the compute node on the Stampede.
+      Each node has 2 octal-core chips, but you will only be using a single
+      core for this assignment. </p>
 
-    <h2>Build notes on Lonestar</h2>
+    <h2>Build notes on Stempede</h2>
+    <!--
     <p> You need to load the following modules on Lonestar to build the code successfully (for using the ATLAS BLAS library).
     <li> module swap intel gcc/4.4.5 </li>
         <li>  module load atlas</li>
-    </p>
+    </p>-->
+     <p> Use the follwing command to include MKL in the PATH:
+     export MKLROOT= /opt/apps/intel/13/composer_xe_2013.1.117/mkl
+         
+     </p>
       <h2>Submission</h2>
 
       <p>Your group should submit your <code>dgemm.c</code>, your
@@ -232,7 +237,7 @@
 We will care about matrix multiply in the range of problems starting with those that do not fit in L2 to those which do not fit in L3. The exact sizes will not be given, but do expect that some tests will be on odd sized matrixes.
 We will also check very small matrix sizes as well. You may need two versions of the code one for smaller matrix sizes and one of bigger matrix sizes.
 All matrices will be square.
-We will test on lonestar. </br>
+We will test on TACC Stampede. </br>
 You are free to use any vector intrinsics available. You are free to prefetch. </br>
 <b>We will compile the code with gcc -O3. </b> 
 </p>
